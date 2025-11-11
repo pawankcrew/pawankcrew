@@ -2,33 +2,27 @@ backend:
   name: git-gateway
   branch: main 
 
-# WAJIB: Konfigurasi Media
-# Folder di mana semua gambar yang Anda upload melalui CMS akan disimpan.
+# --- KONFIGURASI MEDIA ---
+# WAJIB: Folder di mana semua gambar akan disimpan
 media_folder: "images/uploads" 
-# Path publik untuk mengakses gambar tersebut (relatif dari root situs).
+# WAJIB: Path publik untuk mengakses gambar tersebut (relatif dari root situs)
 public_folder: "/images/uploads"
 
-# Konfigurasi media_library dihapus karena memicu error. 
-# Netlify akan menggunakan media handler default-nya.
-
-# WAJIB: Konfigurasi Koleksi (Content Types)
+# --- KONFIGURASI KOLEKSI ---
 collections:
   - name: "berita" 
     label: "Berita & Kegiatan" 
     label_singular: "Artikel Berita"
     description: "Tulis, edit, dan kelola semua artikel berita di sini."
     
-    # Mode file: kita ingin semua berita disimpan dalam satu file JSON
+    # Lokasi file data
     folder: "_data" 
     file: "berita.json" 
     
-    # Ini berarti kita mengedit sebuah LIST/DAFTAR item di dalam file itu
-    widget: "list"
-    
-    # field: Ini adalah kolom-kolom yang akan muncul di editor Anda
+    # Menunjukkan bahwa kita mengelola daftar item di dalam file tersebut
     fields:
       - { label: "Judul Berita", name: "judul", widget: "string", required: true }
       - { label: "Tanggal Publikasi", name: "tanggal", widget: "datetime", format: "YYYY-MM-DD", timeFormat: false }
       - { label: "Gambar Unggulan", name: "gambar", widget: "image", required: true }
-      - { label: "Ringkasan (Tampil di Kartu)", name: "ringkasan", widget: "markdown", required: true, hint: "Teks singkat (paragraf awal) yang muncul di kartu berita di halaman utama." }
-      - { label: "Konten Lengkap (Setelah Baca Selengkapnya)", name: "konten", widget: "markdown", required: true, hint: "Isi artikel lengkap, mendukung formatting seperti Heading, Bold, dan List." }
+      - { label: "Ringkasan", name: "ringkasan", widget: "markdown", required: true }
+      - { label: "Konten Lengkap", name: "konten", widget: "markdown", required: true }
