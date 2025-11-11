@@ -6,6 +6,9 @@
     <title>PKBM Tarbiyatunnasyiin Paculgowang</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+    
     <style>
         body {
             box-sizing: border-box;
@@ -32,23 +35,26 @@
             opacity: 1;
             transform: translateY(0);
         }
-        /* Style untuk konten Markdown yang dimuat dari CMS */
-        .prose {
-            line-height: 1.6;
+        /* Style untuk konten berita yang dimuat */
+        .berita-content {
+            white-space: pre-wrap;
+            word-wrap: break-word;
         }
-        .prose p {
-            margin-bottom: 1em;
-        }
-        .prose ul, .prose ol {
-            margin-left: 1.5em;
-        }
-        .prose img {
+        /* Style untuk gambar di konten berita */
+        .berita-content img {
             max-width: 100%;
             height: auto;
-            border-radius: 0.375rem;
-            margin-top: 0.5rem;
+            border-radius: 0.5rem; /* rounded-lg */
+            margin: 1rem 0;
+        }
+        .berita-content h1, .berita-content h2, .berita-content h3 {
+            font-weight: bold;
+            margin-top: 1rem;
             margin-bottom: 0.5rem;
         }
+        .berita-content h1 { font-size: 2em; }
+        .berita-content h2 { font-size: 1.5em; }
+        .berita-content h3 { font-size: 1.17em; }
     </style>
 </head>
 <body class="font-sans">
@@ -261,8 +267,11 @@
                         </p>
                     </div>
                     
-                    <div id="berita-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        <p class="col-span-full text-center text-gray-500 p-8">Memuat berita...</p>
+                    <div id="berita-container" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        <div class="text-center p-8">
+                            <i class="fas fa-spinner fa-spin text-blue-600 text-3xl mb-4"></i>
+                            <p class="text-gray-600">Memuat berita terkini...</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -454,6 +463,91 @@
     </footer>
 
     <script>
+        // FUNGSI UTAMA UNTUK MEMUAT BERITA DARI CMS
+        async function muatBerita() {
+            const container = document.getElementById('berita-container');
+            container.innerHTML = ''; // Hapus pesan "Memuat berita..."
+            
+            try {
+                // Ambil data dari file yang dihasilkan Netlify CMS
+                const response = await fetch('/_data/berita.json');
+                if (!response.ok) {
+                    throw new Error('Gagal memuat berita. Pastikan Anda sudah membuat dan mempublikasikan minimal 1 berita di CMS.');
+                }
+                
+                const beritaData = await response.json();
+                
+                if (beritaData.length === 0) {
+                    container.innerHTML = `<div class="md:col-span-3 text-center p-8 bg-white rounded-lg shadow-lg">
+                        <p class="text-gray-600">Belum ada berita yang dipublikasikan. Silakan buat berita baru di panel admin.</p>
+                    </div>`;
+                    return;
+                }
+
+                // Sorting berita dari yang terbaru
+                beritaData.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+                beritaData.forEach((item, index) => {
+                    // Batasi ringkasan (summary) hanya 55 kata atau kurang
+                    const ringkasan = item.summary.split(/\s+/).slice(0, 55).join(" ") + (item.summary.split(/\s+/).length > 55 ? "..." : "");
+
+                    // Fungsi sederhana untuk membuat slug dari judul
+                    const slug = item.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-*|-*$/g, '');
+                    const beritaId = `berita-${slug}-${index}`;
+
+                    const element = document.createElement('article');
+                    element.className = 'bg-white rounded-lg shadow-lg overflow-hidden card-hover fade-in';
+                    element.innerHTML = `
+                        <div class="h-48 bg-gray-200 flex items-center justify-center overflow-hidden">
+                            ${item.image ? `<img src="${item.image}" alt="Gambar Berita" class="w-full h-full object-cover">` : `<i class="fas fa-newspaper text-gray-500 text-4xl"></i>`}
+                        </div>
+                        <div class="p-6">
+                            <div class="text-sm text-gray-500 mb-2">${new Date(item.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+                            <h3 class="text-xl font-semibold mb-3 text-gray-800">${item.title}</h3>
+                            <p class="text-gray-600 mb-4">${ringkasan}</p>
+                            <button onclick="tampilkanBeritaLengkap('${beritaId}')" class="text-blue-600 font-semibold hover:text-blue-800 transition-colors" data-full-content-id="full-content-${beritaId}">
+                                Baca Selengkapnya
+                            </button>
+                        </div>
+                        <div id="full-content-${beritaId}" class="fixed inset-0 bg-gray-900 bg-opacity-75 z-[9999] flex items-start justify-center p-4 overflow-y-auto" style="display: none;">
+                            <div class="bg-white rounded-lg shadow-2xl max-w-4xl w-full my-10 p-6 md:p-10 transform transition-all">
+                                <h2 class="text-3xl font-bold text-gray-900 mb-4">${item.title}</h2>
+                                <div class="text-sm text-gray-500 mb-6 border-b pb-4">
+                                    <i class="fas fa-calendar-alt mr-2"></i> ${new Date(item.date).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                                </div>
+                                <div class="berita-content text-gray-700 leading-relaxed overflow-y-auto max-h-[70vh]">
+                                    ${item.body}
+                                </div>
+                                <button onclick="sembunyikanBeritaLengkap('full-content-${beritaId}')" class="mt-8 px-6 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors">
+                                    Tutup
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(element);
+                    // Panggil observer lagi untuk item baru
+                    observer.observe(element);
+                });
+            } catch (error) {
+                console.error("Kesalahan saat memuat data berita:", error);
+                container.innerHTML = `<div class="md:col-span-3 text-center p-8 bg-red-100 border border-red-400 text-red-700 rounded-lg shadow-lg">
+                    <p class="font-semibold mb-2">Gagal Memuat Berita!</p>
+                    <p class="text-sm">${error.message}</p>
+                </div>`;
+            }
+        }
+        
+        // FUNGSI MODAL BERITA LENGKAP
+        function tampilkanBeritaLengkap(id) {
+            document.getElementById(id).style.display = 'flex';
+            document.body.style.overflow = 'hidden'; // Nonaktifkan scroll body saat modal aktif
+        }
+        
+        function sembunyikanBeritaLengkap(id) {
+            document.getElementById(id).style.display = 'none';
+            document.body.style.overflow = ''; // Aktifkan kembali scroll body
+        }
+
         // Mobile menu toggle
         const mobileMenuBtn = document.getElementById('mobile-menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
@@ -501,8 +595,6 @@
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     entry.target.classList.add('visible');
-                    // Hentikan pengamatan setelah elemen terlihat
-                    observer.unobserve(entry.target); 
                 }
             });
         }, observerOptions);
@@ -511,7 +603,7 @@
             observer.observe(el);
         });
 
-        // Contact form handling
+        // Contact form handling (hanya placeholder karena Netlify Forms membutuhkan atribut 'data-netlify="true"' di form)
         document.getElementById('contact-form').addEventListener('submit', (e) => {
             e.preventDefault();
             
@@ -519,13 +611,13 @@
             const formData = new FormData(e.target);
             const data = Object.fromEntries(formData);
             
-            // Show success message
+            // Simulasikan pengiriman berhasil
             const successMessage = document.createElement('div');
             successMessage.className = 'bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4';
             successMessage.innerHTML = `
                 <div class="flex items-center">
                     <i class="fas fa-check-circle mr-2"></i>
-                    <span>Terima kasih! Pesan Anda telah terkirim. Kami akan segera menghubungi Anda.</span>
+                    <span>Terima kasih! Pesan Anda telah terkirim (Simulasi). Untuk fungsionalitas penuh, tambahkan atribut 'data-netlify="true"' pada tag form.</span>
                 </div>
             `;
             
@@ -538,7 +630,7 @@
             // Remove success message after 5 seconds
             setTimeout(() => {
                 successMessage.remove();
-            }, 5000);
+            }, 8000);
         });
 
         // Initialize fade-in animations for elements already in view
@@ -549,125 +641,20 @@
                     el.classList.add('visible');
                 }
             });
+            
+            // Panggil fungsi pemuat berita saat DOM siap
+            muatBerita();
         });
         
-        // --- START JAVASCRIPT UNTUK MEMUAT BERITA DARI CMS ---
-        
-        // Fungsi handler untuk tombol 'Baca Selengkapnya'
-        function toggleNewsContent(e) {
-            const article = e.target.closest('article');
-            if (!article) return;
-
-            // Kita menggunakan kelas CSS tersembunyi/terlihat
-            const summary = article.querySelector('.news-summary');
-            const fullContent = article.querySelector('.news-full-content');
-            const button = e.target;
-
-            if (fullContent.classList.contains('hidden')) {
-                // Tampilkan Konten Lengkap
-                summary.classList.add('hidden');
-                fullContent.classList.remove('hidden');
-                button.textContent = 'Sembunyikan';
-            } else {
-                // Sembunyikan Konten Lengkap
-                summary.classList.remove('hidden');
-                fullContent.classList.add('hidden');
-                button.textContent = 'Baca Selengkapnya';
-            }
-        }
-
-        // Fungsi untuk mengaktifkan tombol 'Baca Selengkapnya'
-        function setupNewsToggles() {
-            document.querySelectorAll('.read-more-btn').forEach(button => {
-                button.addEventListener('click', toggleNewsContent);
+        // Pengaturan Netlify Identity Widget
+        if (window.netlifyIdentity) {
+            window.netlifyIdentity.on("init", user => {
+                if (!user) {
+                    // Jika Anda ingin tombol login muncul di suatu tempat
+                    // window.netlifyIdentity.on("open", () => console.log("Login window opened"));
+                }
             });
         }
-
-
-        /**
-         * Fungsi untuk memuat berita dari file berita.json
-         */
-        async function muatBerita() {
-            const beritaGrid = document.getElementById('berita-grid');
-            if (!beritaGrid) return; 
-
-            try {
-                // Ambil data berita dari file JSON yang dibuat CMS
-                const response = await fetch('/_data/berita.json', { cache: 'no-cache' });
-                
-                if (!response.ok) {
-                    console.warn('File _data/berita.json belum ditemukan atau kosong. Silakan posting berita pertama di /admin/');
-                    beritaGrid.innerHTML = '<p class="text-gray-600 col-span-full text-center p-8">Belum ada Berita & Kegiatan yang dipublikasikan.</p>';
-                    return;
-                }
-                
-                const data = await response.json();
-                // Data berita sebenarnya berada di dalam array 'collections' di dalam 'berita.json'
-                const semuaBerita = data.berita || []; 
-
-                beritaGrid.innerHTML = ''; 
-                
-                if (semuaBerita.length === 0) {
-                     beritaGrid.innerHTML = '<p class="text-gray-600 col-span-full text-center p-8">Belum ada Berita & Kegiatan yang dipublikasikan.</p>';
-                    return;
-                }
-
-                // Urutkan berita, dari yang terbaru
-                semuaBerita.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
-
-                // Loop setiap artikel berita dan buat elemen HTML-nya
-                semuaBerita.forEach(berita => {
-                    const article = document.createElement('article');
-                    // Menambahkan kelas card-hover dan fade-in untuk styling dan animasi
-                    article.className = 'bg-white rounded-lg shadow-lg overflow-hidden card-hover fade-in';
-
-                    // Format tanggal 
-                    const tanggalFmt = new Date(berita.tanggal).toLocaleDateString('id-ID', {
-                        day: 'numeric', month: 'long', year: 'numeric'
-                    });
-
-                    // Kita menggunakan tag <picture> untuk menampung gambar dari CMS
-                    // Dan div prose untuk styling konten markdown
-                    article.innerHTML = `
-                        <img src="${berita.gambar}" alt="${berita.judul}" class="w-full h-48 object-cover">
-                        <div class="p-6">
-                            <div class="text-sm text-gray-500 mb-2">${tanggalFmt}</div>
-                            <h3 class="text-xl font-semibold mb-3 text-gray-800">
-                                ${berita.judul}
-                            </h3>
-                            
-                            <div class="prose prose-sm max-w-none mb-4 news-summary text-gray-600">
-                                ${berita.ringkasan} 
-                            </div>
-                            
-                            <div class="prose prose-sm max-w-none mt-4 news-full-content hidden text-gray-600">
-                                ${berita.konten}
-                            </div>
-
-                            <button class="text-blue-600 font-semibold hover:text-blue-800 transition-colors read-more-btn">
-                                Baca Selengkapnya
-                            </button>
-                        </div>
-                    `;
-                    
-                    beritaGrid.appendChild(article);
-                    // Amati elemen baru untuk animasi fade-in
-                    observer.observe(article); 
-                });
-
-                // Setelah semua artikel ditambahkan, aktifkan tombol "Baca Selengkapnya"
-                setupNewsToggles();
-
-            } catch (error) {
-                console.error('Error memuat berita:', error);
-                beritaGrid.innerHTML = '<p class="text-gray-600 col-span-full text-center p-8">Terjadi masalah saat memuat berita.</p>';
-            }
-        }
-
-        // Panggil fungsi 'muatBerita' saat halaman selesai dimuat
-        document.addEventListener('DOMContentLoaded', muatBerita);
-        
-        // --- END JAVASCRIPT UNTUK MEMUAT BERITA DARI CMS ---
     </script>
 </body>
 </html>
