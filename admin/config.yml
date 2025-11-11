@@ -1,6 +1,6 @@
 backend:
   name: git-gateway
-  branch: main  # Tetap 'main' karena Anda konfirmasi branch Anda 'main'
+  branch: main 
 
 # WAJIB: Konfigurasi Media
 # Folder di mana semua gambar yang Anda upload melalui CMS akan disimpan.
@@ -8,21 +8,19 @@ media_folder: "images/uploads"
 # Path publik untuk mengakses gambar tersebut (relatif dari root situs).
 public_folder: "/images/uploads"
 
-# OPSIONAL TAPI SANGAT DISARANKAN: Integrasi Media Library
-# Ini menggunakan widget default yang sudah sangat baik.
-media_library:
-  name: upload
+# Konfigurasi media_library dihapus karena memicu error. 
+# Netlify akan menggunakan media handler default-nya.
 
 # WAJIB: Konfigurasi Koleksi (Content Types)
 collections:
-  - name: "berita" # Nama unik koleksi
-    label: "Berita & Kegiatan" # Nama yang tampil di CMS
+  - name: "berita" 
+    label: "Berita & Kegiatan" 
     label_singular: "Artikel Berita"
     description: "Tulis, edit, dan kelola semua artikel berita di sini."
     
     # Mode file: kita ingin semua berita disimpan dalam satu file JSON
-    folder: "_data" # Folder tempat file akan dibuat
-    file: "berita.json" # Nama file data JSON
+    folder: "_data" 
+    file: "berita.json" 
     
     # Ini berarti kita mengedit sebuah LIST/DAFTAR item di dalam file itu
     widget: "list"
