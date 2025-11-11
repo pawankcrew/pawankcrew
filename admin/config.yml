@@ -24,4 +24,4 @@ collections:
       - { label: "Gambar Unggulan", name: "gambar", widget: "image", required: true }
       - { label: "Ringkasan (Tampil di Kartu)", name: "ringkasan", widget: "markdown", required: true, hint: "Teks singkat (paragraf awal) yang muncul di kartu berita di halaman utama." }
       - { label: "Konten Lengkap (Isi Artikel)", name: "konten", widget: "body", required: true, hint: "Gunakan editor visual ini untuk membuat konten artikel lengkap." }
-      # ^ PERHATIKAN PERUBAHAN DI BARIS INI ^
+      # ^ PASTIKAN 'widget: body' SUDAH TERPASANG DI SINI ^
