@@ -1,0 +1,3 @@
+backend:
+  name: git-gateway
+  branch: main  # <-- Sudah cocok, tidak perlu diubah
