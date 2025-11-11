@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Editor Berita</title>
+    <!-- 1. Muat Tailwind CSS untuk styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 2. Muat Font Awesome untuk ikon-ikon editor -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* Style kustom untuk editor contentEditable */
+        #editor {
+            outline: none;
+            min-height: 300px;
+            padding: 1rem;
+            border: 1px solid #D1D5DB; /* border-gray-300 */
+            border-top: 0;
+            border-bottom-left-radius: 0.375rem; /* rounded-b-md */
+            border-bottom-right-radius: 0.375rem; /* rounded-b-md */
+        }
+        /* Memberi style pada konten yang dihasilkan di dalam editor */
+        #editor p, #editor ul, #editor ol {
+            margin-bottom: 1rem;
+        }
+        #editor ul, #editor ol {
+            padding-left: 1.5rem;
+        }
+        #editor ul {
+            list-style-type: disc;
+        }
+        #editor ol {
+            list-style-type: decimal;
+        }
+        #editor a {
+            color: #2563EB; /* text-blue-600 */
+            text-decoration: underline;
+        }
+        #editor img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0.375rem; /* rounded-md */
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        /* Tombol toolbar yang aktif */
+        .toolbar-btn.active {
+            background-color: #E5E7EB; /* bg-gray-200 */
+        }
+        /* Style untuk Tab di Modal */
+        .modal-tab-btn {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            color: #6B7280; /* text-gray-500 */
+        }
+        .modal-tab-btn.active {
+            color: #2563EB; /* text-blue-600 */
+            border-bottom-color: #2563EB; /* border-blue-600 */
+            font-weight: 600;
+        }
+        /* Style untuk gambar di area pratinjau, meniru #editor img */
+        #previewArea .prose img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0.375rem; /* rounded-md */
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        /* Style untuk gambar yang diklik di editor */
+        #editor img:hover {
+            cursor: pointer;
+            outline: 3px solid #60A5FA; /* outline-blue-400 */
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans p-4 md:p-10">
+
+    <div class="max-w-4xl mx-auto bg-white shadow-xl rounded-lg overflow-hidden">
+        <h1 class="text-2xl md:text-3xl font-bold text-center text-gray-800 p-6 bg-gray-50 border-b">
+            Panel Editor Berita
+        </h1>
+
+        <div class="p-6 md:p-8 space-y-6">
+            <!-- Input Judul -->
+            <div>
+                <label for="newsTitle" class="block text-sm font-medium text-gray-700 mb-2">Judul Berita</label>
+                <input type="text" id="newsTitle" class="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Masukkan judul berita di sini...">
+            </div>
+
+            <!-- Input Ringkasan (untuk "Baca Selengkapnya") -->
+            <div>
+                <label for="newsSummary" class="block text-sm font-medium text-gray-700 mb-2">Ringkasan (untuk 'Baca Selengkapnya')</label>
+                <textarea id="newsSummary" rows="4" class="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Tulis ringkasan singkat yang akan muncul sebelum 'Baca Selengkapnya'"></textarea>
+            </div>
+
+            <!-- Editor Konten -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Konten Berita Lengkap</label>
+                
+                <!-- Toolbar Editor -->
+                <div id="toolbar" class="flex flex-wrap items-center gap-1 p-2 bg-gray-50 border border-gray-300 rounded-t-md">
+                    <button onclick="formatDoc('bold')" class="toolbar-btn p-2 rounded hover:bg-gray-200" title="Bold"><i class="fas fa-bold"></i></button>
+                    <button onclick="formatDoc('italic')" class="toolbar-btn p-2 rounded hover:bg-gray-200" title="Italic"><i class="fas fa-italic"></i></button>
+                    <button onclick="formatDoc('underline')" class="toolbar-btn p-2 rounded hover:bg-gray-200" title="Underline"><i class="fas fa-underline"></i></button>
+                    <button onclick="formatDoc('insertUnorderedList')" class="toolbar-btn p-2 rounded hover:bg-gray-200" title="List (Bullet)"><i class="fas fa-list-ul"></i></button>
+                    <button onclick="formatDoc('insertOrderedList')" class="toolbar-btn p-2 rounded hover:bg-gray-200" title="List (Angka)"><i class="fas fa-list-ol"></i></button>
+                    <button onclick="formatDoc('justifyLeft')" class="toolbar-btn p-2 rounded hover:bg-gray-200" title="Rata Kiri"><i class="fas fa-align-left"></i></button>
+                    <button onclick="formatDoc('justifyCenter')" class="toolbar-btn p-2 rounded hover:bg-gray-200" title="Rata Tengah"><i class="fas fa-align-center"></i></button>
+                    <button onclick="formatDoc('justifyRight')" class="toolbar-btn p-2 rounded hover:bg-gray-200" title="Rata Kanan"><i class="fas fa-align-right"></i></button>
+                    <button onclick="insertImage()" class="toolbar-btn p-2 rounded hover:bg-gray-200" title="Sisipkan Gambar"><i class="fas fa-image"></i></button>
+                    <button onclick="formatDoc('createLink')" class="toolbar-btn p-2 rounded hover:bg-gray-200" title="Sisipkan Link"><i class="fas fa-link"></i></button>
+                    <button onclick="formatDoc('unlink')" class="toolbar-btn p-2 rounded hover:bg-gray-200" title="Hapus Link"><i class="fas fa-unlink"></i></button>
+                </div>
+
+                <!-- Area Tulis (Visual Editor) -->
+                <div id="editor" contenteditable="true">
+                    <p>Tulis konten berita lengkap Anda di sini...</p>
+                </div>
+
+                <!-- Area HTML (HTML Editor) -->
+                <textarea id="htmlView" class="w-full p-3 border border-gray-300 rounded-b-md font-mono text-sm" style="display: none; min-height: 300px;"></textarea>
+            </div>
+
+            <!-- Tombol Aksi -->
+            <div class="flex flex-col sm:flex-row gap-4">
+                <button id="toggleViewButton" onclick="toggleView()" class="w-full sm:w-auto px-4 py-2 bg-gray-600 text-white font-semibold rounded-md hover:bg-gray-700 transition-colors">
+                    <i class="fas fa-code mr-2"></i>Lihat HTML
+                </button>
+                <button id="previewButton" onclick="generatePreview()" class="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors">
+                    <i class="fas fa-eye mr-2"></i>Buat Pratinjau
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Area Pratinjau -->
+    <div id="previewAreaWrapper" class="max-w-4xl mx-auto bg-white shadow-xl rounded-lg mt-10 overflow-hidden" style="display: none;">
+        <h2 class="text-2xl font-bold text-gray-800 p-6 bg-gray-50 border-b">
+            Pratinjau Berita
+        </h2>
+        <div id="previewArea" class="p-6 md:p-8">
+            <!-- Konten pratinjau akan dimuat di sini oleh JavaScript -->
+        </div>
+    </div>
+
+    <!-- Modal Kustom untuk Input URL -->
+        <div id="urlModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4" style="display: none; z-index: 50;">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6 space-y-4">
+            <h3 id="modalTitle" class="text-xl font-semibold text-gray-800"></h3>
+
+            <!-- Navigasi Tab (hanya untuk gambar) -->
+            <div id="modalTabs" class="flex border-b mb-4" style="display: none;">
+                <button id="urlTabBtn" onclick="showImageTab('url')" class="modal-tab-btn active">
+                    Via URL
+                </button>
+                <button id="uploadTabBtn" onclick="showImageTab('upload')" class="modal-tab-btn">
+                    Upload
+                </button>
+            </div>
+
+            <!-- Konten Tab URL (default untuk link & gambar) -->
+            <div id="urlTabContent">
+                <label id="modalLabel" for="modalInput" class="block text-sm font-medium text-gray-700 mb-2"></label>
+                <input type="text" id="modalInput" class="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="https://...">
+            </div>
+
+            <!-- Konten Tab Upload (hanya untuk gambar) -->
+            <div id="uploadTabContent" style="display: none;">
+                <label for="fileInput" class="block text-sm font-medium text-gray-700 mb-2">Pilih file gambar:</label>
+                <input type="file" id="fileInput" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer">
+            </div>
+
+            <!-- Input Ukuran Gambar (Baru) -->
+            <div id="imageSizeInputWrapper" class="pt-2" style="display: none;">
+                <label for="imageWidthInput" class="block text-sm font-medium text-gray-700 mb-2">Lebar Gambar (Opsional)</label>
+                <input type="text" id="imageWidthInput" class="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Cth: 500px atau 100%">
+            </div>
+
+            <div class="flex justify-end gap-3 pt-4">
+                <button type="button" onclick="closeModal()" class="px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-md hover:bg-gray-300 transition-colors">Batal</button>
+                <button type="button" onclick="submitModal()" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal BARU untuk Mengedit Gambar yang Sudah Ada -->
+    <div id="editImageModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center p-4" style="display: none; z-index: 60;">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6 space-y-4">
+            <h3 class="text-xl font-semibold text-gray-800">Edit Gambar</h3>
+            
+            <!-- Pratinjau Gambar Mini -->
+            <img id="editImagePreview" src="" class="max-w-full h-auto max-h-40 mx-auto rounded-md border border-gray-200">
+            
+            <div>
+                <label for="editImageWidthInput" class="block text-sm font-medium text-gray-700 mb-2">Atur Lebar Gambar</label>
+                <input type="text" id="editImageWidthInput" class="w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Cth: 500px atau 100%">
+            </div>
+            
+            <div class="flex justify-between gap-3 pt-4">
+                <button type="button" onclick="removeImage()" class="px-4 py-2 bg-red-600 text-white font-semibold rounded-md hover:bg-red-700 transition-colors">Hapus Gambar</button>
+                <div class="flex gap-3">
+                    <button type="button" onclick="closeEditImageModal()" class="px-4 py-2 bg-gray-200 text-gray-800 font-semibold rounded-md hover:bg-gray-300 transition-colors">Batal</button>
+                    <button type="button" onclick="applyImageEdits()" class="px-4 py-2 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors">Terapkan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // ... (Elemen-elemen yang ada) ...
+        const fileInput = document.getElementById('fileInput');
+        const urlTabBtn = document.getElementById('urlTabBtn');
+        const uploadTabBtn = document.getElementById('uploadTabBtn');
+        let activeImageTab = 'url'; 
+        let savedRange = null; 
+        
+        // --- Elemen BARU ---
+        const imageSizeInputWrapper = document.getElementById('imageSizeInputWrapper');
+        const imageWidthInput = document.getElementById('imageWidthInput');
+        const editImageModal = document.getElementById('editImageModal');
+        const editImagePreview = document.getElementById('editImagePreview');
+        const editImageWidthInput = document.getElementById('editImageWidthInput');
+        let currentlyEditingImage = null; // Untuk melacak gambar yang sedang diedit
+
+        // --- Tambahkan listener ke editor untuk mendeteksi klik pada gambar ---
+        editor.addEventListener('click', (e) => {
+            if (e.target.tagName === 'IMG') {
+                e.preventDefault(); // Mencegah perilaku default (seperti menyeret)
+                openImageEditModal(e.target);
+            }
+        });
+
+        modalInput.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // Mencegah form submit (jika ada)
+                submitModal();
+            }
+        });
+
+        // Fungsi untuk menjalankan perintah format pada editor
+        function formatDoc(command, value = null) {
+            // execCommand sudah agak usang, tapi ini adalah cara termudah
+            // untuk membuat editor WYSIWYG dasar tanpa library eksternal.
+            if (command === 'createLink') {
+                saveSelection(); // <-- PERBAIKAN: Simpan posisi kursor
+                // Hapus prompt, ganti dengan panggil modal
+                openModal('createLink', 'Sisipkan Link', 'Masukkan URL Link:');
+                return; // Hentikan eksekusi di sini, akan dilanjut oleh submitModal()
+            }
+            document.execCommand(command, false, value);
+            editor.focus(); // Kembalikan fokus ke editor
+        }
+
+        // Fungsi khusus untuk menyisipkan gambar
+        function insertImage() {
+            saveSelection(); // <-- PERBAIKAN: Simpan posisi kursor
+            // Hapus prompt, ganti dengan panggil modal
+            openModal('insertImage', 'Sisipkan Gambar', 'Masukkan URL Gambar:');
+        }
+
+        // --- Fungsi Modal Baru ---
+        function openModal(command, title, label) {
+            currentCommand = command;
+            modalTitle.textContent = title;
+            modalLabel.textContent = label;
+            modalInput.value = 'https://';
+            imageWidthInput.value = ''; // Reset input lebar
+
+            if (command === 'insertImage') {
+                // Tampilkan tab dan input ukuran untuk gambar
+                modalTabs.style.display = 'flex';
+                imageSizeInputWrapper.style.display = 'block';
+                showImageTab('url'); // Set default ke tab URL
+            } else {
+                // Sembunyikan tab dan input ukuran untuk 'createLink'
+                modalTabs.style.display = 'none';
+                imageSizeInputWrapper.style.display = 'none';
+                urlTabContent.style.display = 'block';
+                uploadTabContent.style.display = 'none';
+            }
+
+            urlModal.style.display = 'flex';
+            modalInput.focus();
+            modalInput.setSelectionRange(8, 8); // Posisikan kursor setelah 'https://'
+        }
+
+        function closeModal() {
+            urlModal.style.display = 'none';
+            modalInput.value = '';
+            fileInput.value = ''; // Reset input file
+            imageWidthInput.value = ''; // Reset input lebar
+            currentCommand = null;
+            savedRange = null; // <-- PERBAIKAN: Hapus seleksi yang disimpan
+        }
+
+        // Fungsi baru untuk ganti tab di modal gambar
+        function showImageTab(tabName) {
+            activeImageTab = tabName;
+            if (tabName === 'url') {
+                urlTabContent.style.display = 'block';
+                uploadTabContent.style.display = 'none';
+                urlTabBtn.classList.add('active');
+                uploadTabBtn.classList.remove('active');
+            } else if (tabName === 'upload') {
+                urlTabContent.style.display = 'none';
+                uploadTabContent.style.display = 'block';
+                urlTabBtn.classList.remove('active');
+                uploadTabBtn.classList.add('active');
+            }
+        }
+
+        function submitModal() {
+            if (currentCommand === 'createLink') {
+                // Logika untuk 'createLink' tetap sama
+                const url = modalInput.value;
+                if (!url || url === 'https://') {
+                    closeModal();
+                    return;
+                }
+                restoreSelection(); // <-- PERBAIKAN: Kembalikan posisi kursor
+                document.execCommand('createLink', false, url);
+                closeModal();
+            } else if (currentCommand === 'insertImage') {
+                
+                // --- Logika BARU: Dapatkan lebar dan buat string style ---
+                const width = imageWidthInput.value;
+                let styleString = '';
+                if (width) {
+                    // Pastikan nilai memiliki 'px' atau '%'
+                    const sanitizedWidth = width.endsWith('px') || width.endsWith('%') ? width : `${width}px`;
+                    styleString = `style="width: ${sanitizedWidth}; height: auto;"`;
+                }
+
+                if (activeImageTab === 'url') {
+                    // --- Opsi 1: Sisipkan via URL ---
+                    const url = modalInput.value;
+                    if (url && url !== 'https://') {
+                        if (url.match(/\.(jpeg|jpg|gif|png|webp)$/i)) {
+                            restoreSelection(); // Kembalikan posisi kursor
+                            // PERBAIKAN: Gunakan 'insertHTML' untuk menyertakan style
+                            const imgHtml = `<img src="${url}" ${styleString}>`;
+                            document.execCommand('insertHTML', false, imgHtml);
+                        } else {
+                            console.warn('URL gambar tidak valid.');
+                        }
+                    }
+                    closeModal();
+                } else if (activeImageTab === 'upload') {
+                    // --- Opsi 2: Sisipkan via Upload ---
+                    const file = fileInput.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const dataUrl = e.target.result;
+                            // PERBAIKAN: Gunakan 'insertHTML' dan tambahkan string style
+                            const imgHtml = `<img src="${dataUrl}" ${styleString}>`;
+                            
+                            restoreSelection(); 
+                            document.execCommand('insertHTML', false, imgHtml);
+                            
+                            closeModal();
+                        };
+                        reader.readAsDataURL(file);
+                    } else {
+                        console.warn('Tidak ada file yang dipilih.');
+                        closeModal();
+                    }
+                }
+            }
+        }
+        
+        // --- FUNGSI BARU UNTUK SELEKSI KURSOR ---
+        
+        /**
+         * Menyimpan posisi kursor (Range) saat ini ke variabel global 'savedRange'
+         * Ini dipanggil SEBELUM modal dibuka.
+         */
+        function saveSelection() {
+            if (window.getSelection) { // Browser modern
+                const sel = window.getSelection();
+                if (sel.getRangeAt && sel.rangeCount) {
+                    savedRange = sel.getRangeAt(0);
+                }
+            } else if (document.selection && document.selection.createRange) { // IE
+                savedRange = document.selection.createRange();
+            }
+        }
+
+        /**
+         * Mengembalikan fokus dan posisi kursor (Range) dari 'savedRange'
+         * Ini dipanggil TEPAT SEBELUM perintah execCommand dijalankan.
+         */
+        function restoreSelection() {
+            editor.focus(); // Pertama, pastikan editornya fokus
+            if (savedRange) {
+                if (window.getSelection) { // Browser modern
+                    const sel = window.getSelection();
+                    sel.removeAllRanges(); // Hapus seleksi yang ada (misalnya di tombol modal)
+                    sel.addRange(savedRange); // Tambahkan seleksi yang disimpan
+                } else if (document.selection && savedRange.select) { // IE
+                    savedRange.select();
+                }
+            }
+        }
+
+        // --- FUNGSI BARU UNTUK MODAL EDIT GAMBAR ---
+
+        /**
+         * Membuka modal untuk mengedit gambar yang sudah ada
+         * @param {HTMLImageElement} imgElement - Elemen <img> yang diklik
+         */
+        function openImageEditModal(imgElement) {
+            currentlyEditingImage = imgElement;
+            editImagePreview.src = imgElement.src;
+            
+            // Dapatkan lebar saat ini (dari style atau atribut)
+            let currentWidth = imgElement.style.width || imgElement.getAttribute('width') || '';
+            editImageWidthInput.value = currentWidth;
+            
+            editImageModal.style.display = 'flex';
+            editImageWidthInput.focus();
+        }
+
+        /** Menutup modal edit gambar */
+        function closeEditImageModal() {
+            editImageModal.style.display = 'none';
+            currentlyEditingImage = null;
+            editImageWidthInput.value = '';
+            editImagePreview.src = '';
+        }
+
+        /** Menerapkan perubahan ukuran dari modal edit */
+        function applyImageEdits() {
+            if (!currentlyEditingImage) return;
+
+            const newWidth = editImageWidthInput.value;
+            
+            if (newWidth) {
+                // Terapkan style baru
+                const sanitizedWidth = newWidth.endsWith('px') || newWidth.endsWith('%') ? newWidth : `${newWidth}px`;
+                currentlyEditingImage.style.width = sanitizedWidth;
+                currentlyEditingImage.style.height = 'auto'; // Selalu jaga rasio aspek
+            } else {
+                // Hapus style jika input dikosongkan
+                currentlyEditingImage.style.width = '';
+                currentlyEditingImage.style.height = '';
+            }
+            
+            closeEditImageModal();
+        }
+
+        /** Menghapus gambar dari modal edit */
+        function removeImage() {
+            if (currentlyEditingImage) {
+                currentlyEditingImage.remove(); // Hapus elemen gambar dari DOM
+            }
+            closeEditImageModal();
+        }
+
+
+        // Fungsi untuk beralih antara editor visual dan editor HTML
+        function toggleView() {
+            if (editor.style.display !== 'none') {
+                // Beralih ke Tampilan HTML
+                htmlView.value = editor.innerHTML; // Salin dari visual ke HTML
+                editor.style.display = 'none';
+                toolbar.style.display = 'none'; // Sembunyikan toolbar juga
+                htmlView.style.display = 'block';
+                toggleViewButton.innerHTML = '<i class="fas fa-pen-to-square mr-2"></i>Lihat Visual';
+            } else {
+                // Beralih ke Tampilan Visual
+                editor.innerHTML = htmlView.value; // Salin dari HTML ke visual
+                editor.style.display = 'block';
+                toolbar.style.display = 'flex'; // Tampilkan lagi toolbar
+                htmlView.style.display = 'none';
+                toggleViewButton.innerHTML = '<i class="fas fa-code mr-2"></i>Lihat HTML';
+            }
+        }
+
+        // Fungsi untuk membuat pratinjau
+        function generatePreview() {
+            // Pastikan kita mengambil konten terbaru (jika sedang di mode HTML)
+            if (editor.style.display === 'none') {
+                editor.innerHTML = htmlView.value;
+            }
+
+            // Ambil semua nilai
+            const title = document.getElementById('newsTitle').value;
+            const summary = document.getElementById('newsSummary').value;
+            const fullContent = editor.innerHTML;
+
+            // Buat HTML untuk pratinjau
+            // Ganti paragraf di ringkasan menjadi div agar tidak ada P di dalam P
+            const summaryHtml = '<div class="text-gray-700 text-lg mb-4">' + summary.replace(/<p>/g, '<div>').replace(/<\/p>/g, '</div>') + '</div>';
+            
+            previewArea.innerHTML = `
+                <h3 class="text-3xl font-bold text-gray-900 mb-4">${title || 'Judul Berita Anda'}</h3>
+                
+                <!-- Bagian Ringkasan -->
+                <div id="summaryContent" class="prose prose-lg max-w-none">
+                    ${summaryHtml}
+                </div>
+                
+                <!-- Link "Baca Selengkapnya" -->
+                <a id="readMoreLink" class="text-blue-600 font-semibold hover:underline cursor-pointer text-lg">
+                    Baca Selengkapnya...
+                </a>
+                
+                <!-- Konten Lengkap (tersembunyi) -->
+                <div id="fullContent" class="prose prose-lg max-w-none mt-4" style="display: none;">
+                    ${fullContent}
+                </div>
+            `;
+
+            // Tampilkan area pratinjau
+            previewAreaWrapper.style.display = 'block';
+
+            // Tambahkan event listener ke link "Baca Selengkapnya" yang baru dibuat
+            const readMoreLink = document.getElementById('readMoreLink');
+            const fullContentDiv = document.getElementById('fullContent');
+            
+            if(readMoreLink) {
+                readMoreLink.addEventListener('click', () => {
+                    fullContentDiv.style.display = 'block'; // Tampilkan konten lengkap
+                    readMoreLink.style.display = 'none';  // Sembunyikan link
+                });
+            }
+
+            // Gulir ke area pratinjau
+            previewAreaWrapper.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Menjaga status tombol toolbar (aktif/tidak)
+        editor.addEventListener('input', updateToolbar);
+        editor.addEventListener('click', updateToolbar);
+        editor.addEventListener('keyup', updateToolbar);
+
+        function updateToolbar() {
+            const buttons = document.querySelectorAll('.toolbar-btn');
+            buttons.forEach(btn => {
+                const onclickAttr = btn.getAttribute('onclick');
+                const match = onclickAttr ? onclickAttr.match(/'(.*?)'/) : null; // Dapatkan atribut dan cocokkan
+                
+                // Periksa apakah pencocokan berhasil dan memiliki grup tangkapan
+                if (match && match[1]) {
+                    const command = match[1];
+                    if (command && document.queryCommandState(command)) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                } else {
+                    // Ini adalah tombol tanpa status (seperti insertImage), pastikan tidak aktif
+                    btn.classList.remove('active');
+                }
+            });
+        }
+    </script>
+
+</body>
+</html>
