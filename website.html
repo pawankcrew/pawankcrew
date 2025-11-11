@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PKBM Tarbiyatunnasyiin Paculgowang</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         body {
@@ -32,29 +32,42 @@
             opacity: 1;
             transform: translateY(0);
         }
+        /* Style tambahan untuk konten berita yang disalin dari editor.
+         Menggunakan 'prose-sm' agar pas di dalam kartu.
+        */
+        .news-summary.prose,
+        .news-full-content.prose {
+            font-size: 0.875rem; /* text-sm */
+            line-height: 1.25rem;
+        }
+        .news-summary.prose p,
+        .news-full-content.prose p {
+            margin-top: 0.5em;
+            margin-bottom: 0.5em;
+        }
+        .news-full-content.prose ul,
+        .news-full-content.prose ol {
+             margin-top: 0.5em;
+             margin-bottom: 0.5em;
+        }
     </style>
 </head>
 <body class="font-sans">
-    <!-- Header -->
     <header class="bg-white shadow-lg sticky top-0 z-50 navbar-scroll">
         <div class="container mx-auto px-4">
             <div class="flex items-center justify-between py-4">
                 <div class="flex items-center space-x-3">
-                    <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
-                        <i class="fas fa-graduation-cap text-white text-xl"></i>
-                    </div>
+                    <img src="https://i.imgur.com/D061ewy.png" alt="Logo PKBM Tarbiyatunnasyiin" class="w-12 h-12 object-contain">
                     <div>
                         <h1 class="text-xl font-bold text-gray-800">PKBM Tarbiyatunnasyiin</h1>
                         <p class="text-sm text-gray-600">Paculgowang</p>
                     </div>
                 </div>
                 
-                <!-- Mobile Menu Button -->
                 <button id="mobile-menu-btn" class="md:hidden text-gray-600 hover:text-blue-600">
                     <i class="fas fa-bars text-xl"></i>
                 </button>
                 
-                <!-- Desktop Navigation -->
                 <nav class="hidden md:flex space-x-8">
                     <a href="#beranda" class="text-gray-700 hover:text-blue-600 font-medium transition-colors">Beranda</a>
                     <a href="#tentang" class="text-gray-700 hover:text-blue-600 font-medium transition-colors">Tentang</a>
@@ -64,7 +77,6 @@
                 </nav>
             </div>
             
-            <!-- Mobile Navigation -->
             <nav id="mobile-menu" class="md:hidden hidden pb-4">
                 <div class="flex flex-col space-y-2">
                     <a href="#beranda" class="text-gray-700 hover:text-blue-600 py-2 px-4 rounded transition-colors">Beranda</a>
@@ -78,7 +90,6 @@
     </header>
 
     <main>
-        <!-- Hero Section -->
         <section id="beranda" class="hero-bg text-white py-20">
             <div class="container mx-auto px-4">
                 <div class="max-w-4xl mx-auto text-center">
@@ -101,7 +112,6 @@
             </div>
         </section>
 
-        <!-- Tentang Section -->
         <section id="tentang" class="py-16 bg-gray-50">
             <div class="container mx-auto px-4">
                 <div class="max-w-6xl mx-auto">
@@ -147,7 +157,6 @@
             </div>
         </section>
 
-        <!-- Program Section -->
         <section id="program" class="py-16 bg-white">
             <div class="container mx-auto px-4">
                 <div class="max-w-6xl mx-auto">
@@ -241,7 +250,6 @@
             </div>
         </section>
 
-        <!-- Berita Section -->
         <section id="berita" class="py-16 bg-gray-50">
             <div class="container mx-auto px-4">
                 <div class="max-w-6xl mx-auto">
@@ -252,60 +260,102 @@
                         </p>
                     </div>
                     
-                    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                        
                         <article class="bg-white rounded-lg shadow-lg overflow-hidden card-hover fade-in">
-                            <div class="h-48 bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center">
-                                <i class="fas fa-newspaper text-white text-4xl"></i>
-                            </div>
+                            <img src="https://via.placeholder.com/400x200?text=Gambar+Berita+1" alt="Judul Berita" class="w-full h-48 object-cover">
                             <div class="p-6">
                                 <div class="text-sm text-gray-500 mb-2">15 Januari 2024</div>
-                                <h3 class="text-xl font-semibold mb-3 text-gray-800">Pembukaan Pendaftaran Tahun Ajaran Baru 2024/2025</h3>
-                                <p class="text-gray-600 mb-4">
-                                    PKBM Tarbiyatunnasyiin membuka pendaftaran untuk semua program pendidikan kesetaraan dan kursus keterampilan.
-                                </p>
-                                <button class="text-blue-600 font-semibold hover:text-blue-800 transition-colors">
+                                <h3 class="text-xl font-semibold mb-3 text-gray-800">
+                                    Pembukaan Pendaftaran Tahun Ajaran Baru 2024/2025
+                                </h3>
+                                
+                                <div class="prose prose-sm max-w-none mb-4 news-summary">
+                                    <p>PKBM Tarbiyatunnasyiin membuka pendaftaran untuk semua program pendidikan kesetaraan dan kursus keterampilan.</p>
+                                </div>
+                                
+                                <div class="prose prose-sm max-w-none mt-4 news-full-content" style="display: none;">
+                                    <p>Ini adalah konten lengkap yang akan Anda salin dari editor berita. Konten ini bisa memiliki <strong>bold</strong>, <em>italic</em>, dan <ul><li>list</li></ul> yang akan diformat oleh 'prose'.</p>
+                                    <p>Anda bisa menambahkan lebih banyak paragraf di sini dari hasil editor HTML.</p>
+                                </div>
+
+                                <button class="text-blue-600 font-semibold hover:text-blue-800 transition-colors read-more-btn">
                                     Baca Selengkapnya
                                 </button>
                             </div>
                         </article>
                         
                         <article class="bg-white rounded-lg shadow-lg overflow-hidden card-hover fade-in">
-                            <div class="h-48 bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center">
-                                <i class="fas fa-trophy text-white text-4xl"></i>
-                            </div>
+                            <img src="https://via.placeholder.com/400x200?text=Gambar+Berita+2" alt="Judul Berita" class="w-full h-48 object-cover">
                             <div class="p-6">
                                 <div class="text-sm text-gray-500 mb-2">10 Januari 2024</div>
-                                <h3 class="text-xl font-semibold mb-3 text-gray-800">Prestasi Gemilang Peserta Didik di Lomba Keterampilan</h3>
-                                <p class="text-gray-600 mb-4">
-                                    Peserta didik PKBM meraih juara dalam berbagai kategori lomba keterampilan tingkat kabupaten.
-                                </p>
-                                <button class="text-green-600 font-semibold hover:text-green-800 transition-colors">
+                                <h3 class="text-xl font-semibold mb-3 text-gray-800">
+                                    Prestasi Gemilang Peserta Didik di Lomba Keterampilan
+                                </h3>
+                                
+                                <div class="prose prose-sm max-w-none mb-4 news-summary">
+                                    <p>Peserta didik PKBM meraih juara dalam berbagai kategori lomba keterampilan tingkat kabupaten.</p>
+                                </div>
+                                
+                                <div class="prose prose-sm max-w-none mt-4 news-full-content" style="display: none;">
+                                    <p>Detail lengkap mengenai prestasi gemilang para peserta didik akan ditampilkan di sini. Mereka berhasil memenangkan 3 medali emas dan 2 perak.</p>
+                                </div>
+
+                                <button class="text-blue-600 font-semibold hover:text-blue-800 transition-colors read-more-btn">
                                     Baca Selengkapnya
                                 </button>
                             </div>
                         </article>
                         
                         <article class="bg-white rounded-lg shadow-lg overflow-hidden card-hover fade-in">
-                            <div class="h-48 bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center">
-                                <i class="fas fa-handshake text-white text-4xl"></i>
-                            </div>
+                            <img src="https://via.placeholder.com/400x200?text=Gambar+Berita+3" alt="Judul Berita" class="w-full h-48 object-cover">
                             <div class="p-6">
                                 <div class="text-sm text-gray-500 mb-2">5 Januari 2024</div>
-                                <h3 class="text-xl font-semibold mb-3 text-gray-800">Kerjasama dengan Dunia Usaha dan Industri</h3>
-                                <p class="text-gray-600 mb-4">
-                                    Penandatanganan MoU dengan berbagai perusahaan untuk program magang dan penyaluran kerja lulusan.
-                                </p>
-                                <button class="text-purple-600 font-semibold hover:text-purple-800 transition-colors">
+                                <h3 class="text-xl font-semibold mb-3 text-gray-800">
+                                    Kerjasama dengan Dunia Usaha dan Industri
+                                </h3>
+                                
+                                <div class="prose prose-sm max-w-none mb-4 news-summary">
+                                    <p>Penandatanganan MoU dengan berbagai perusahaan untuk program magang dan penyaluran kerja lulusan.</p>
+                                </div>
+                                
+                                <div class="prose prose-sm max-w-none mt-4 news-full-content" style="display: none;">
+                                    <p>Kerjasama ini melibatkan 5 perusahaan besar di Jombang, membuka peluang besar bagi lulusan Paket C Kejuruan untuk langsung bekerja.</p>
+                                </div>
+
+                                <button class="text-blue-600 font-semibold hover:text-blue-800 transition-colors read-more-btn">
                                     Baca Selengkapnya
                                 </button>
                             </div>
                         </article>
+
+                        <article class="bg-white rounded-lg shadow-lg overflow-hidden card-hover fade-in">
+                            <img src="https://via.placeholder.com/400x200?text=Gambar+Berita+4" alt="Judul Berita" class="w-full h-48 object-cover">
+                            <div class="p-6">
+                                <div class="text-sm text-gray-500 mb-2">1 Januari 2024</div>
+                                <h3 class="text-xl font-semibold mb-3 text-gray-800">
+                                    Berita Baru (Contoh)
+                                </h3>
+                                
+                                <div class="prose prose-sm max-w-none mb-4 news-summary">
+                                    <p>Ini adalah ringkasan untuk berita keempat Anda. Anda bisa mengisinya dari input 'Ringkasan' di editor.</p>
+                                </div>
+                                
+                                <div class="prose prose-sm max-w-none mt-4 news-full-content" style="display: none;">
+                                    <p>Ini adalah konten lengkap untuk berita keempat, yang akan Anda salin dari tampilan HTML di editor berita.</p>
+                                </div>
+
+                                <button class="text-blue-600 font-semibold hover:text-blue-800 transition-colors read-more-btn">
+                                    Baca Selengkapnya
+                                </button>
+                            </div>
+                        </article>
+
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Kontak Section -->
         <section id="kontak" class="py-16 bg-white">
             <div class="container mx-auto px-4">
                 <div class="max-w-6xl mx-auto">
@@ -426,16 +476,13 @@
         </section>
     </main>
 
-    <!-- Footer -->
     <footer class="bg-gray-800 text-white py-12">
         <div class="container mx-auto px-4">
             <div class="max-w-6xl mx-auto">
                 <div class="grid md:grid-cols-4 gap-8">
                     <div>
                         <div class="flex items-center space-x-3 mb-4">
-                            <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
-                                <i class="fas fa-graduation-cap text-white"></i>
-                            </div>
+                            <img src="https://i.imgur.com/D061ewy.png" alt="Logo PKBM" class="w-10 h-10 object-contain">
                             <div>
                                 <h3 class="font-bold">PKBM Tarbiyatunnasyiin</h3>
                                 <p class="text-sm text-gray-400">Paculgowang</p>
@@ -578,7 +625,35 @@
             }, 5000);
         });
 
-        // Initialize fade-in animations for elements already in view
+        // --- MODIFIKASI: FUNGSI BARU UNTUK TOGGLE BERITA ---
+        
+        /**
+         * Menyiapkan tombol "Baca Selengkapnya" di semua kartu berita
+         */
+        function setupNewsToggles() {
+            // Dapatkan semua artikel di dalam section #berita
+            const newsArticles = document.querySelectorAll('#berita article');
+            
+            newsArticles.forEach(article => {
+                // Cari tombol, ringkasan, dan konten lengkap di dalam setiap artikel
+                const readMoreBtn = article.querySelector('.read-more-btn');
+                const fullContent = article.querySelector('.news-full-content');
+                
+                if (readMoreBtn && fullContent) {
+                    readMoreBtn.addEventListener('click', () => {
+                        // Tampilkan konten lengkap
+                        fullContent.style.display = 'block';
+                        // Sembunyikan tombol "Baca Selengkapnya"
+                        readMoreBtn.style.display = 'none';
+                    });
+                }
+            });
+        }
+        
+        // --- END OF MODIFIKASI ---
+
+
+        // Initialize fade-in animations and news toggles when DOM is ready
         document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.fade-in').forEach(el => {
                 const rect = el.getBoundingClientRect();
@@ -586,6 +661,9 @@
                     el.classList.add('visible');
                 }
             });
+
+            // MODIFIKASI: Panggil fungsi setup berita
+            setupNewsToggles();
         });
     </script>
 <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9919dfaf628c9b9c',t:'MTc2MDk3NzU1NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
