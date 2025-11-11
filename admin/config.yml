@@ -3,9 +3,7 @@ backend:
   branch: main 
 
 # --- KONFIGURASI MEDIA ---
-# WAJIB: Folder di mana semua gambar akan disimpan
 media_folder: "images/uploads" 
-# WAJIB: Path publik untuk mengakses gambar tersebut (relatif dari root situs)
 public_folder: "/images/uploads"
 
 # --- KONFIGURASI KOLEKSI ---
@@ -24,5 +22,6 @@ collections:
       - { label: "Judul Berita", name: "judul", widget: "string", required: true }
       - { label: "Tanggal Publikasi", name: "tanggal", widget: "datetime", format: "YYYY-MM-DD", timeFormat: false }
       - { label: "Gambar Unggulan", name: "gambar", widget: "image", required: true }
-      - { label: "Ringkasan", name: "ringkasan", widget: "markdown", required: true }
-      - { label: "Konten Lengkap", name: "konten", widget: "markdown", required: true }
+      - { label: "Ringkasan (Tampil di Kartu)", name: "ringkasan", widget: "markdown", required: true, hint: "Teks singkat (paragraf awal) yang muncul di kartu berita di halaman utama." }
+      - { label: "Konten Lengkap (Isi Artikel)", name: "konten", widget: "body", required: true, hint: "Gunakan editor visual ini untuk membuat konten artikel lengkap." }
+      # ^ PERHATIKAN PERUBAHAN DI BARIS INI ^
