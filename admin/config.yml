@@ -1,3 +1,36 @@
 backend:
   name: git-gateway
-  branch: main  # <-- Sudah cocok, tidak perlu diubah
+  branch: main  # Tetap 'main' karena Anda konfirmasi branch Anda 'main'
+
+# WAJIB: Konfigurasi Media
+# Folder di mana semua gambar yang Anda upload melalui CMS akan disimpan.
+media_folder: "images/uploads" 
+# Path publik untuk mengakses gambar tersebut (relatif dari root situs).
+public_folder: "/images/uploads"
+
+# OPSIONAL TAPI SANGAT DISARANKAN: Integrasi Media Library
+# Ini menggunakan widget default yang sudah sangat baik.
+media_library:
+  name: upload
+
+# WAJIB: Konfigurasi Koleksi (Content Types)
+collections:
+  - name: "berita" # Nama unik koleksi
+    label: "Berita & Kegiatan" # Nama yang tampil di CMS
+    label_singular: "Artikel Berita"
+    description: "Tulis, edit, dan kelola semua artikel berita di sini."
+    
+    # Mode file: kita ingin semua berita disimpan dalam satu file JSON
+    folder: "_data" # Folder tempat file akan dibuat
+    file: "berita.json" # Nama file data JSON
+    
+    # Ini berarti kita mengedit sebuah LIST/DAFTAR item di dalam file itu
+    widget: "list"
+    
+    # field: Ini adalah kolom-kolom yang akan muncul di editor Anda
+    fields:
+      - { label: "Judul Berita", name: "judul", widget: "string", required: true }
+      - { label: "Tanggal Publikasi", name: "tanggal", widget: "datetime", format: "YYYY-MM-DD", timeFormat: false }
+      - { label: "Gambar Unggulan", name: "gambar", widget: "image", required: true }
+      - { label: "Ringkasan (Tampil di Kartu)", name: "ringkasan", widget: "markdown", required: true, hint: "Teks singkat (paragraf awal) yang muncul di kartu berita di halaman utama." }
+      - { label: "Konten Lengkap (Setelah Baca Selengkapnya)", name: "konten", widget: "markdown", required: true, hint: "Isi artikel lengkap, mendukung formatting seperti Heading, Bold, dan List." }
